@@ -1,0 +1,17 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: membership-virtualservice
+  namespace: emu3
+spec:
+  hosts:
+    - membership
+  http:
+    - route:
+        - destination:
+            host: membership
+            subset: "v1"
+          weight: 100
+      retries:
+        attempts: 3
+        perTryTimeout: 2s

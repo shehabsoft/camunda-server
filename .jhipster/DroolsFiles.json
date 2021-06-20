@@ -1,0 +1,19 @@
+{
+  "name": "DroolsFiles",
+  "fields": [],
+  "relationships": [],
+  "changelogDate": "20210406092727",
+  "entityTableName": "drools_files",
+  "dto": "mapstruct",
+  "pagination": "pagination",
+  "service": "serviceImpl",
+  "jpaMetamodelFiltering": false,
+  "fluentMethods": true,
+  "readOnly": false,
+  "embedded": false,
+  "clientRootFolder": "camundaServer",
+  "applications": "*",
+  "microserviceName": "camundaServer",
+  "searchEngine": false,
+  "databaseType": "sql"
+}

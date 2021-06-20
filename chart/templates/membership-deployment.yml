@@ -1,0 +1,126 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: camundaserver
+  namespace: emu3
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: camundaserver
+      version: "v1"
+  template:
+    metadata:
+      labels:
+        app: camundaserver
+        version: "v1"
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - camundaserver
+                topologyKey: kubernetes.io/hostname
+              weight: 100
+      initContainers:
+        - name: init-ds
+          image: busybox:latest
+          command:
+            - "/bin/sh"
+            - "-c"
+            - |
+              while true
+              do
+                rt=$(nc -z -w 1 postgres-postgresql.database.svc.cluster.local 5432)
+                if [ $? -eq 0 ]; then
+                  echo "DB is UP"
+                  break
+                fi
+                echo "DB is not yet reachable;sleep for 10s before retry"
+                sleep 10
+              done
+      imagePullSecrets:
+       - name: regcred
+      containers:
+        - name: camundaserver-app
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: prod
+            - name: SPRING_CLOUD_CONSUL_HOST
+              value: consul.emu.svc.cluster.local
+            - name: SPRING_CLOUD_STREAM_KAFKA_BINDER_BROKERS
+              value: "kafka-1619149992.kafka.svc.cluster.local:9092"
+            - name: SPRING_CLOUD_CONSUL_PORT
+              value: "8500"
+            - name: SPRING_CLOUD_CONSUL_DISCOVERY_PREFER_IP_ADDRESS
+              value: "false"
+            - name: SPRING_CLOUD_CONSUL_DISCOVERY_HOSTNAME
+              value: camundaserver
+            - name: SPRING_CLOUD_CONSUL_DISCOVERY_SERVICE_NAME
+              value: camundaserver
+            - name: SPRING_DATASOURCE_URL
+              value: jdbc:postgresql://postgres-postgresql.database.svc.cluster.local:5432/camundaserver
+            - name: SPRING_DATASOURCE_USERNAME
+              value: camundaserver
+            - name: SPRING_DATASOURCE_PASSWORD
+              value: Q1JKZlM0RUlQTA==
+            - name: SPRING_LIQUIBASE_URL
+              value:  jdbc:postgresql://postgres-postgresql.database.svc.cluster.local:5432/camundaserver
+            - name: SPRING_ELASTICSEARCH_REST_URIS
+              value: http://elasticsearch-master.logging.svc.cluster.local:9200
+            - name: KAFKA_CONSUMER_KEY_DESERIALIZER
+              value: "org.apache.kafka.common.serialization.StringDeserializer"
+            - name: KAFKA_CONSUMER_VALUE_DESERIALIZER
+              value: "org.apache.kafka.common.serialization.StringDeserializer"
+            - name: SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_OIDC_ISSUER_URI
+              value: 'http://192.168.5.86/auth/realms/jhipster'
+            - name: SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_OIDC_CLIENT_ID
+              value: 'internal'
+            - name: SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_OIDC_CLIENT_SECRET
+              value: 'internal'
+            - name: KAFKA_CONSUMER_BOOTSTRAP_SERVERS
+              value: "kafka-1619149992.kafka.svc.cluster.local:9092"
+            - name: KAFKA_CONSUMER_GROUP_ID
+              value: "camundaserver"
+            - name: KAFKA_CONSUMER_AUTO_OFFSET_RESET
+              value: "earliest"
+            - name: KAFKA_PRODUCER_BOOTSTRAP_SERVERS
+              value: "kafka-1619149992.kafka.svc.cluster.local:9092"
+            - name: KAFKA_PRODUCER_KEY_DESERIALIZER
+              value: "org.apache.kafka.common.serialization.StringDeserializer"
+            - name: KAFKA_PRODUCER_VALUE_DESERIALIZER
+              value: "org.apache.kafka.common.serialization.StringDeserializer"
+            - name: SPRING_SLEUTH_PROPAGATION_KEYS
+              value: "x-request-id,x-ot-span-context"
+            - name: JAVA_OPTS
+              value: " -Xmx256m -Xms256m"
+            - name: SERVER_SHUTDOWN
+              value: graceful
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "500m"
+            limits:
+              memory: "1Gi"
+              cpu: "1"
+          ports:
+            - name: http
+              containerPort: 8083
+          readinessProbe:
+            httpGet:
+              path: /management/health/readiness
+              port: http
+            initialDelaySeconds: 20
+            periodSeconds: 15
+            failureThreshold: 6
+          livenessProbe:
+            httpGet:
+              path: /management/health/liveness
+              port: http
+            initialDelaySeconds: 120

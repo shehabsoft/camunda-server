@@ -1,0 +1,14 @@
+
+
+
+entity OperationsLogs {
+   operationName String,
+  logDetails String
+}
+
+
+
+
+dto  OperationsLogs with mapstruct
+paginate  OperationsLogs with pagination
+service  OperationsLogs with serviceImpl

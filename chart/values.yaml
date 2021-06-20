@@ -1,0 +1,7 @@
+# Default values for Dropwizard projects.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+image:
+  repository: nexus.diracatom.com:18444/membership
+  tag: 0.0.1
+  pullPolicy: IfNotPresent

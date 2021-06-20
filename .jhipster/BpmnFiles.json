@@ -1,0 +1,31 @@
+{
+  "name": "BpmnFiles",
+  "fields": [
+    {
+      "fieldName": "fileName",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "fileContentType",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "fileContent",
+      "fieldType": "byte[]",
+      "fieldTypeBlobContent": "any"
+    }
+  ],
+  "relationships": [],
+  "changelogDate": "20210406093154",
+  "entityTableName": "bpmn_files",
+  "dto": "mapstruct",
+  "pagination": "pagination",
+  "service": "serviceImpl",
+  "jpaMetamodelFiltering": false,
+  "fluentMethods": true,
+  "readOnly": false,
+  "embedded": false,
+  "clientRootFolder": "camundaServer",
+  "applications": "*",
+  "microserviceName": "camundaServer"
+}
